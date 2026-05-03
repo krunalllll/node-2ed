@@ -10,6 +10,7 @@ let items = [
     { id: 2, name: 'Item 2' }
 ];
 
+
 app.get('/', (req, res) => {
     res.send('Welcome to the REST API!');
 });
