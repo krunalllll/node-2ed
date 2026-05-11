@@ -1,13 +1,26 @@
 const express = require("express");
 const db = require("./config/db");
 const User = require("./model/UserModel");
+const path = require("path");
 
 const app = express();
 
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("Server is working!");
+// Set up EJS and static files
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+app.use(express.static(path.join(__dirname, "public")));
+
+app.get("/", async (req, res) => {
+  try {
+    const users = await User.find();
+    console.log(users);
+    res.render("index", { users });
+  } catch (err) {
+    console.log(err);
+    res.send("Error loading page");
+  }
 });
 
 // user add karne ke liye
