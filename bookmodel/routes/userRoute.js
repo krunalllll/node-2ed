@@ -1,39 +1,9 @@
-const express = require("express")
-const auth = require("../middlewere/auth");
+const express = require("express");
+const { signup, login } = require("../controller/UserController");
 
-const { 
-    addUser, 
-    getUsers, 
-    updateUser, 
-    deleteUser, 
-    login, 
-    verify, 
-    Home 
-} = require("../controller/UserController")
+const router = express.Router();
 
+router.post("/signup", signup);
+router.post("/login", login);
 
-
-const U_router = express.Router()
-
-// ADD USER
-U_router.post("/add", addUser)
-
-// LOGIN
-U_router.post("/login", login)
-
-// VERIFY TOKEN
-U_router.post("/verify", verify)
-
-// GET USERS
-U_router.get("/get", getUsers)
-
-// UPDATE USER
-U_router.patch("/update/:id", updateUser)
-
-// DELETE USER
-U_router.delete("/delete/:id", deleteUser)
-
-// PROTECTED ROUTE
-U_router.get("/", verify, auth, Home)
-
-module.exports = U_router
+module.exports = router;

@@ -1,92 +1,47 @@
-const userModel = require("../model/usermodel")
-const jwt = require("jsonwebtoken")
+const UserModel = require("../model/UserModel");
 
-// ADD USER
-const addUser = async (req, res) => {
-    const { username, password, role } = req.body
-
-    const data = await userModel.create({
-        username: username,
-        password: password,
-        role: role || "user"
-    })
-
-    return res.send(data)
-}
-
-// GET ALL USERS
-const getUsers = async (req, res) => {
-    const data = await userModel.find()
-    return res.send(data)
-}
-
-// UPDATE USER
-const updateUser = async (req, res) => {
-    const data = await userModel.findByIdAndUpdate(req.params.id, req.body)
-    return res.send(data)
-}
-
-// DELETE USER
-const deleteUser = async (req, res) => {
-    const data = await userModel.findByIdAndDelete(req.params.id)
-    return res.send(data)
-}
-
-// LOGIN
-const login = async (req, res) => {
-    const { username, password, role } = req.body
-
-    const data = await userModel.findOne({ username })
-
-    if (!data) {
-        return res.send("username not exist")
-    }
-    else if (data.password !== password) {
-        return res.send("password mismatch")
-    }
-    else {
-        let payload = {
-            username,
-            password,
-            role: role || "user"
-        }
-
-        const info = jwt.sign(payload, "secret-key")
-        return res.send(info)
-    }
-}
-
-// VERIFY TOKEN (middleware style like madam)
-const verify = async (req, res, next) => {
+const signup = async (req, res) => {
     try {
-        const token = req.headers.authorization.split(" ")[1];
-
-        if (!token) {
-            return res.status(401).send("Token missing")
+        const { username, email, password } = req.body;
+        
+        // Check if user already exists
+        const existingUser = await UserModel.findOne({ $or: [{ email }, { username }] });
+        if (existingUser) {
+            return res.status(400).json({ message: "User already exists with this email or username." });
         }
 
-        const info = jwt.verify(token, "secret-key")
-        console.log(info)
+        const newUser = new UserModel({
+            username,
+            email,
+            password
+        });
 
-        req.user = info
-        next()
-
-    } catch (err) {
-        res.status(401).send("Invalid Token")
+        await newUser.save();
+        res.status(201).json({ message: "Signup successful", user: { id: newUser._id, username: newUser.username, email: newUser.email } });
+    } catch (error) {
+        res.status(500).json({ message: "Error in signup", error: error.message });
     }
-}
+};
 
-// HOME ROUTE
-const Home = (req, res) => {
-    res.send("home")
-}
+const login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
 
-module.exports = {
-    addUser,
-    getUsers,
-    updateUser,
-    deleteUser,
-    login,
-    verify,
-    Home
-}
+        // Check if user exists
+        const user = await UserModel.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: "Invalid email or password" });
+        }
+
+        // Compare password
+        if (password !== user.password) {
+            return res.status(400).json({ message: "Invalid email or password" });
+        }
+
+        res.status(200).json({ message: "Login successful", user: { id: user._id, username: user.username, email: user.email } });
+    } catch (error) {
+        res.status(500).json({ message: "Error in login", error: error.message });
+    }
+};
+
+module.exports = { signup, login };

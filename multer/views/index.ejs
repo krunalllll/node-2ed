@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multer File Upload</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
+        h2 { color: #333; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .form-container { background: #fff; margin-bottom: 30px; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 15px; background-color: #28a745; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #218838; }
+        
+        .users-list { display: flex; flex-wrap: wrap; gap: 20px; }
+        .user-card { background: #fff; border-radius: 8px; padding: 15px; text-align: center; width: 200px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .user-card img { max-width: 100%; height: 150px; object-fit: cover; border-radius: 5px; margin-bottom: 10px; }
+        .user-card h3 { margin: 10px 0 5px 0; font-size: 18px; color: #333; }
+        .user-card p { margin: 0; color: #777; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Upload User Data with Image</h2>
+    <div class="form-container">
+        <!-- Form MUST have enctype="multipart/form-data" for file upload -->
+        <form action="/upload" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required placeholder="Enter username">
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required placeholder="Enter password">
+            </div>
+            <div class="form-group">
+                <label for="image">Profile Image:</label>
+                <input type="file" id="image" name="image" accept="image/*" required>
+            </div>
+            <button type="submit">Upload & Save</button>
+        </form>
+    </div>
+
+    <h2>Users List</h2>
+    <div class="users-list">
+        <% if (users && users.length > 0) { %>
+            <% users.forEach(user => { %>
+                <div class="user-card">
+                    <% if (user.image) { %>
+                        <img src="/upload/<%= user.image %>" alt="<%= user.username %>">
+                    <% } else { %>
+                        <div style="height: 150px; background: #eee; display:flex; align-items:center; justify-content:center; border-radius: 5px; margin-bottom: 10px;">
+                            No Image
+                        </div>
+                    <% } %>
+                    <h3><%= user.username %></h3>
+                    <p>Password: <%= user.password %></p>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <p>No users found in the database.</p>
+        <% } %>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Book App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: rgba(30, 41, 59, 0.7);
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: radial-gradient(circle at top right, rgba(59, 130, 246, 0.2), transparent 40%),
+                              radial-gradient(circle at bottom left, rgba(239, 68, 68, 0.1), transparent 40%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        h1, h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.1s ease;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button.danger {
+            background: var(--danger);
+        }
+        button.danger:hover {
+            background: var(--danger-hover);
+        }
+
+        .toggle-link {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+        .toggle-link span {
+            color: #60a5fa;
+        }
+        .toggle-link span:hover {
+            text-decoration: underline;
+        }
+
+        /* App specific styles */
+        #app-section {
+            display: none;
+        }
+        
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .header-row button {
+            width: auto;
+            padding: 0.5rem 1rem;
+        }
+
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .book-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .book-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .book-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .book-card p {
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .book-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .book-actions button {
+            padding: 0.4rem;
+            font-size: 0.8rem;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            background: #10b981;
+            color: white;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            pointer-events: none;
+        }
+        .toast.error { background: var(--danger); }
+        .toast.show { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- Auth Section -->
+        <div id="auth-section" class="glass-panel" style="max-width: 400px; margin: 0 auto;">
+            <h1 id="auth-title">Welcome Back</h1>
+            
+            <form id="auth-form">
+                <div class="form-group signup-only" style="display: none;">
+                    <label>Username</label>
+                    <input type="text" id="username" placeholder="Enter your username">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="email" required placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" required placeholder="Enter your password">
+                </div>
+                <button type="submit" id="auth-btn">Login</button>
+            </form>
+            
+            <p class="toggle-link" id="toggle-auth">Don't have an account? <span>Sign up</span></p>
+        </div>
+
+        <!-- App Section -->
+        <div id="app-section" class="glass-panel" style="max-width: 100%;">
+            <div class="header-row">
+                <h2>My Library</h2>
+                <button id="logout-btn" class="danger">Logout</button>
+            </div>
+
+            <form id="add-book-form" style="display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap;">
+                <div class="form-group" style="flex: 1; margin: 0; min-width: 200px;">
+                    <label>Book Name</label>
+                    <input type="text" id="book-name" required placeholder="E.g., The Great Gatsby">
+                </div>
+                <div class="form-group" style="flex: 1; margin: 0; min-width: 200px;">
+                    <label>Author</label>
+                    <input type="text" id="book-author" required placeholder="E.g., F. Scott Fitzgerald">
+                </div>
+                <button type="submit" id="submit-book-btn" style="width: auto; padding: 0.75rem 2rem;">Add Book</button>
+                <button type="button" id="cancel-edit-btn" style="display: none; width: auto; padding: 0.75rem 2rem; background: #64748b;">Cancel</button>
+            </form>
+
+            <div class="books-grid" id="books-container">
+                <!-- Books will be injected here -->
+            </div>
+        </div>
+
+    </div>
+
+    <div id="toast" class="toast">Message here</div>
+
+    <script>
+        // State
+        let isLogin = true;
+        let editingBookId = null;
+        
+        // DOM Elements
+        const authSection = document.getElementById('auth-section');
+        const appSection = document.getElementById('app-section');
+        const authForm = document.getElementById('auth-form');
+        const toggleAuth = document.getElementById('toggle-auth');
+        const authTitle = document.getElementById('auth-title');
+        const authBtn = document.getElementById('auth-btn');
+        const signupOnlyEls = document.querySelectorAll('.signup-only');
+        const logoutBtn = document.getElementById('logout-btn');
+        const addBookForm = document.getElementById('add-book-form');
+        const submitBookBtn = document.getElementById('submit-book-btn');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        const booksContainer = document.getElementById('books-container');
+        const toastEl = document.getElementById('toast');
+
+        // Check auth state on load
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                authSection.style.display = 'none';
+                appSection.style.display = 'block';
+                fetchBooks();
+            } else {
+                authSection.style.display = 'block';
+                appSection.style.display = 'none';
+            }
+        }
+
+        // Show Toast
+        function showToast(msg, isError = false) {
+            toastEl.textContent = msg;
+            toastEl.className = 'toast show ' + (isError ? 'error' : '');
+            setTimeout(() => { toastEl.className = 'toast'; }, 3000);
+        }
+
+        // Toggle Login/Signup UI
+        toggleAuth.addEventListener('click', () => {
+            isLogin = !isLogin;
+            authTitle.textContent = isLogin ? 'Welcome Back' : 'Create Account';
+            authBtn.textContent = isLogin ? 'Login' : 'Sign Up';
+            toggleAuth.innerHTML = isLogin ? "Don't have an account? <span>Sign up</span>" : "Already have an account? <span>Login</span>";
+            signupOnlyEls.forEach(el => el.style.display = isLogin ? 'none' : 'block');
+            if(!isLogin) document.getElementById('username').required = true;
+            else document.getElementById('username').required = false;
+        });
+
+        // Handle Auth Submit
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const username = document.getElementById('username').value;
+
+            const url = isLogin ? '/user/login' : '/user/signup';
+            const body = isLogin ? { email, password } : { username, email, password };
+
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    if (isLogin) {
+                        localStorage.setItem('token', data.token);
+                        showToast('Login successful!');
+                        checkAuth();
+                    } else {
+                        showToast('Signup successful! Please login.');
+                        toggleAuth.click(); // switch to login
+                    }
+                } else {
+                    showToast(data.message || 'Authentication failed', true);
+                }
+            } catch (err) {
+                showToast('An error occurred', true);
+            }
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            showToast('Logged out successfully');
+            checkAuth();
+        });
+
+        // Fetch Books
+        async function fetchBooks() {
+            try {
+                const res = await fetch('/book/all');
+                const books = await res.json();
+                renderBooks(books);
+            } catch (err) {
+                showToast('Failed to load books', true);
+            }
+        }
+
+        // Render Books
+        function renderBooks(books) {
+            booksContainer.innerHTML = '';
+            if (books.length === 0) {
+                booksContainer.innerHTML = '<p style="color: #94a3b8; grid-column: 1/-1; text-align: center;">No books found. Add some!</p>';
+                return;
+            }
+            books.forEach(book => {
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.innerHTML = `
+                    <h3>${book.BookName}</h3>
+                    <p>by ${book.BookAuthor}</p>
+                    <div class="book-actions">
+                        <button onclick="editBook('${book._id}', '${book.BookName}', '${book.BookAuthor}')" style="background: #f59e0b;">Edit</button>
+                        <button onclick="deleteBook('${book._id}')" class="danger">Delete</button>
+                    </div>
+                `;
+                booksContainer.appendChild(card);
+            });
+        }
+
+        // Add or Update Book
+        addBookForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const BookName = document.getElementById('book-name').value;
+            const BookAuthor = document.getElementById('book-author').value;
+            const token = localStorage.getItem('token');
+
+            const url = editingBookId ? '/book/' + editingBookId : '/book/add';
+            const method = editingBookId ? 'PATCH' : 'POST';
+
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ BookName, BookAuthor })
+                });
+
+                if (res.ok) {
+                    showToast(editingBookId ? 'Book updated!' : 'Book added!');
+                    resetForm();
+                    fetchBooks();
+                } else {
+                    const errorData = await res.json();
+                    showToast(errorData.message || (editingBookId ? 'Failed to update book' : 'Failed to add book'), true);
+                }
+            } catch (err) {
+                showToast('Error saving book', true);
+            }
+        });
+
+        function resetForm() {
+            addBookForm.reset();
+            editingBookId = null;
+            submitBookBtn.textContent = 'Add Book';
+            cancelEditBtn.style.display = 'none';
+        }
+
+        cancelEditBtn.addEventListener('click', resetForm);
+
+        // Delete Book
+        window.deleteBook = async (id) => {
+            if(!confirm('Are you sure you want to delete this book?')) return;
+            const token = localStorage.getItem('token');
+            
+            try {
+                const res = await fetch('/book/' + id, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                
+                if (res.ok) {
+                    showToast('Book deleted');
+                    fetchBooks();
+                } else {
+                    showToast('Failed to delete', true);
+                }
+            } catch (err) {
+                showToast('Error deleting book', true);
+            }
+        };
+
+        // Edit Book (Populate form)
+        window.editBook = (id, currentName, currentAuthor) => {
+            editingBookId = id;
+            document.getElementById('book-name').value = currentName;
+            document.getElementById('book-author').value = currentAuthor;
+            submitBookBtn.textContent = 'Update Book';
+            cancelEditBtn.style.display = 'inline-block';
+            
+            // Scroll to form smoothly
+            document.getElementById('app-section').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        // Init
+        checkAuth();
+    </script>
+</body>
+</html>
